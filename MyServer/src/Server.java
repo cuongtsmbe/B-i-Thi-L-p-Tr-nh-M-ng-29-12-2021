@@ -85,39 +85,40 @@ public class Server extends javax.swing.JFrame {
                         
                         KtraUserMoi=true;
                         new ReadMsg(s,i).start();
-                        new KiemTraGhepDoi(s,i).start();
+                       // new KiemTraGhepDoi(s,i).start();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         }
     }
-    class KiemTraGhepDoi extends Thread{
-         Socket s;
-        String id;
-
-        public KiemTraGhepDoi(Socket s, String id) {
-            this.s = s;
-            this.id = id;
-        }
-        public void run(){
-             
-              
-                 while(true){
-                     try {
-                        ThongTinClient cl=(ThongTinClient) clientList.get(s.getPort());
-                            if(cl.DangCho && KtraUserMoi==true){
-                                   KtraUserMoi=false;
-                                   ThucHienGhepDoi(s);
-
-                             }
-
-                        } catch (IOException ex) {
-                          Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
-                        }
-               }
-        }
-    }
+//    class KiemTraGhepDoi extends Thread{
+//         Socket s;
+//        String id;
+//
+//        public KiemTraGhepDoi(Socket s, String id) {
+//            this.s = s;
+//            this.id = id;
+//        }
+//        public void run(){
+//             
+//              int i=0;
+//                 while(true){
+//                     try {
+//                        ThongTinClient cl=(ThongTinClient) clientList.get(s.getPort());
+//                        System.out.println("abc"+(i++));
+//                            if(cl.DangCho && KtraUserMoi==true){
+//                                   KtraUserMoi=false;
+//                                   ThucHienGhepDoi(s);
+//                                   
+//                             }
+//
+//                        } catch (IOException ex) {
+//                          Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+//                        }
+//               }
+//        }
+//    }
     class  ReadMsg extends Thread{
         Socket s;
         String id;
@@ -127,14 +128,16 @@ public class Server extends javax.swing.JFrame {
             this.id = id;
         }
         public void run(){
-                
-            while (true){
+            boolean chay=true;
+            while (chay){
                  try {
                      ThongTinClient cl=(ThongTinClient) clientList.get(s.getPort());
-//                    if(cl.DangCho && KtraUserMoi==true){
-//                        KtraUserMoi=false;
-//                        ThucHienGhepDoi(s);
-//                    }
+                           //ghép đôi
+                            if(cl.DangCho && KtraUserMoi==true){
+                                   KtraUserMoi=false;
+                                   ThucHienGhepDoi(s);
+                                   
+                             }
                     
                     //get key AES in hashmap
                     
@@ -148,14 +151,22 @@ public class Server extends javax.swing.JFrame {
                     }
                    
                     if(messageRecieveFromClient.equals("exit")) {   
+                        chay=false;
                         ThongBaoOutRoom(s,cl);
+                        try{
                         clientList.remove(s.getPort());
+                        }catch(Exception e){}
+                         try{
                         communicate.remove(s.getPort());
+                        }catch(Exception e){}
+                          try{
                         KhongGhep.remove(s.getPort());
+                        }catch(Exception e){}
+                       
                         msgBox.append(id+" Đã thoát!!!");
                         s.close();
                        
-                        break;
+                        
                     }
                     if(messageRecieveFromClient.equals("ls")){
                             System.out.println("--..--");
@@ -189,10 +200,17 @@ public class Server extends javax.swing.JFrame {
                         String StrportBiTuChoi=messageRecieveFromClient.split(";")[0];//get port
                         
                         int IntportBiTuChoi=Integer.parseInt(StrportBiTuChoi);
+
                         //thêm vào danh sách sẽ k đc ghép với s.getPort()
                         ArrayList DanhSachKhongghep=KhongGhep.get(s.getPort());
                         DanhSachKhongghep.add(IntportBiTuChoi);
                         KhongGhep.put(s.getPort(),DanhSachKhongghep);
+
+			//thêm danh sách không ghép với user bị từ chối
+			 ArrayList DanhSachKhongghepBiTuChoi=KhongGhep.get(IntportBiTuChoi);
+                        DanhSachKhongghepBiTuChoi.add(s.getPort());
+                        KhongGhep.put(IntportBiTuChoi,DanhSachKhongghepBiTuChoi);
+
                         ThongTinClient clBiTuChoi=(ThongTinClient) clientList.get(IntportBiTuChoi);
                         System.out.println(s.getPort() +" khongmuon GN "+StrportBiTuChoi);
                         BufferedWriter outUserBiTuChoi= new BufferedWriter(new OutputStreamWriter(clBiTuChoi.getsocket().getOutputStream()));
@@ -213,6 +231,7 @@ public class Server extends javax.swing.JFrame {
                     }
                                      
                 } catch (Exception e) {
+                   
                     e.printStackTrace();
                 }
             }
@@ -220,7 +239,8 @@ public class Server extends javax.swing.JFrame {
         
     }
     
-    private void ThongBaoOutRoom(Socket s,ThongTinClient cl) throws IOException{
+    private void ThongBaoOutRoom(Socket s,ThongTinClient cl){
+        try{
         
          ThongTinClient userGhep=(ThongTinClient) clientList.get(communicate.get(s.getPort()));
                        
@@ -233,6 +253,7 @@ public class Server extends javax.swing.JFrame {
                             outuserGhep.newLine();
                             outuserGhep.flush(); 
                         }
+        }catch(Exception e){}
      
     }
     private void GuiTinNhan(Socket s,String message) throws IOException{
