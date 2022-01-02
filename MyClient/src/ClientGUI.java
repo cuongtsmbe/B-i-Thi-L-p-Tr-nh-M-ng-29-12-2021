@@ -353,9 +353,12 @@ public class ClientGUI extends javax.swing.JFrame {
 
         try {
             userGhepDoi=null;
+            lbThongBao.setText("Clicked "+buttonOutRoom.getText()+" ...");
             buttonOutRoom.setText("Tìm User");
             txtMessage.setVisible(false);
             boxchat.removeAll();
+            
+            lbThongBao.setForeground (Color.green);
             //boxchat.repaint();
             userGhepDoi=null;
             out.write(AES.MaHoaAES("thoatRoom"));
